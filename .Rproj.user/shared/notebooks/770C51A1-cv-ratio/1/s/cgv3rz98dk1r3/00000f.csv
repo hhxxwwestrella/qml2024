@@ -1,0 +1,2 @@
+"0","phoible <- phoible |>"
+"0","  distinct(Glottocode, LanguageName, Phoneme, .keep_all = TRUE)"

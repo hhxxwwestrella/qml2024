@@ -1,0 +1,1 @@
+"0","phoible <- phoible[is.na(phoible$SpecificDialect),]"

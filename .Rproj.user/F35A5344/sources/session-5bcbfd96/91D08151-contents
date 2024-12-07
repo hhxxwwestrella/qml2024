@@ -1,0 +1,8 @@
+library(ggplot2)
+
+data <- readRDS("./data.rds")
+data$value <- factor(data$value,
+                     levels = c("Simple", "Moderately complex", "Complex"))
+data |> ggplot(mapping=aes(x=macroarea, fill=value)) +
+  geom_bar(position='dodge')
+

@@ -1,0 +1,108 @@
+library(tidyverse)
+library(brms)
+library(conflicted)
+conflicts_prefer(plotly::layout)
+data <- readRDS("./data.rds")
+
+data$value <- factor(data$value, levels = c("Simple", "Moderately complex", "Complex"),
+                     ordered = TRUE)
+
+# check the correlation between number of consonants and
+# complexity of syllable structure
+ss_and_ratio <- brm(
+  formula = value ~ CVRatio,
+  data = data,
+  family = acat(link = "logit"),
+  cores = 4,
+  seed = 1229,
+  file = "cache/cvratio"
+)
+summary(ss_and_ratio)
+conditional_effects(ss_and_ratio, categorical = TRUE)
+
+
+
+
+
+# if using macroarea as interactive predictor:
+data <- data |>
+  mutate(
+    macroarea_Africa = ifelse(macroarea == "Africa", 1, 0),
+    macroarea_Australia = ifelse(macroarea == "Australia", 1, 0),
+    macroarea_Eurasia = ifelse(macroarea == "Eurasia", 1, 0),
+    macroarea_NorthAmerica = ifelse(macroarea == "North America", 1, 0),
+    macroarea_Papunesia = ifelse(macroarea == "Papunesia", 1, 0),
+    macroarea_SouthAmerica = ifelse(macroarea == "South America", 1, 0)
+  )
+
+ss_and_consonants_with_macroarea <- brm(
+  formula = value ~ CVRatio:macroarea_Africa +
+    CVRatio:macroarea_Australia +
+    CVRatio:macroarea_Eurasia +
+    CVRatio:macroarea_NorthAmerica +
+    CVRatio:macroarea_Papunesia +
+    CVRatio:macroarea_SouthAmerica,
+  data = data,
+  family = acat(link = "logit"),
+  cores = 4,
+  seed = 1229,
+  file = "cache/cvmacro"
+)
+summary(ss_and_consonants_with_macroarea)
+
+
+
+df_new <- data.frame(
+  ConsonantCount = seq(min(data$ConsonantCount), max(data$ConsonantCount), length.out = 100),
+  macroarea = "South America"
+)
+predictions <- predict(ss_and_consonants_with_macroarea, newdata = df_new, re_formula = NA)
+
+df_plot <- data.frame(ConsonantCount = df_new$ConsonantCount, 
+                      Simple = predictions[,1], 
+                      Moderately_complex = predictions[,2], 
+                      Complex = predictions[,3])
+
+df_long <- pivot_longer(df_plot, cols = c(Simple, Moderately_complex, Complex),
+                               names_to = "Class", values_to = "Probability")
+
+ggplot(df_long, aes(x = ConsonantCount, y = Probability, color = Class)) +
+  geom_line() +
+  labs(title = "Predicted Probabilities Across Classes",
+       x = "Consonant Count",
+       y = "Probability") +
+  theme_minimal()
+
+############
+plot_predictions_for_macroarea <- function(macroarea_name, model, full_data) {
+  # 提取特定macroarea的数据
+  data_sub <- full_data[full_data$macroarea == macroarea_name,]
+  
+  # 预测
+  predictions <- predict(model, newdata = data_sub, re_formula = NA)
+  
+  # 准备可用于绘图的数据框
+  df_plot <- data.frame(ConsonantCount = data_sub$ConsonantCount, 
+                        Simple = predictions[,1], 
+                        ModeratelyComplex = predictions[,2], 
+                        Complex = predictions[,3])
+  
+  df_long <- pivot_longer(df_plot, cols = c(Simple, ModeratelyComplex, Complex),
+                                 names_to = "Class", values_to = "Probability")
+  
+  # 生成图形
+  p <- ggplot(df_long, aes(x = ConsonantCount, y = Probability, color = Class)) +
+    geom_line() +
+    labs(title = paste("Predicted Probabilities in", macroarea_name),
+         x = "Consonant Count", y = "Probability") +
+    theme_minimal()
+  
+  # 保存图形
+  ggsave(paste0("Predictions_", macroarea_name, ".png"), plot = p, width = 10, height = 6)
+  
+  return(p)
+}
+for (macro in unique(data$macroarea)) {
+  plot_predictions_for_macroarea(macro, ss_and_consonants_with_macroarea,
+                                 data)
+}

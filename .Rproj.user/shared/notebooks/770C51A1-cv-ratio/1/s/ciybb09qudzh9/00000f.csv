@@ -1,0 +1,7 @@
+"0","cons_count <- phoible |>"
+"0","  dplyr::filter(SegmentClass == 'consonant') |>"
+"0","  group_by(Glottocode, LanguageName, SegmentClass) |>"
+"0","  summarise(count = n(), .groups = 'drop') |>"
+"0","  mutate(consonant_count = count)"
+"0",""
+"0","cons_count <- cons_count[c('Glottocode', 'LanguageName', 'consonant_count')]"

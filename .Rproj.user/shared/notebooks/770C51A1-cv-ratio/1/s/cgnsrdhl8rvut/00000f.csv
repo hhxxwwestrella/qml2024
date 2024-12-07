@@ -1,0 +1,2 @@
+"0","library(ritwals)"
+"0","Syllable_Structure <- get_feature('12A', data = WALS)"

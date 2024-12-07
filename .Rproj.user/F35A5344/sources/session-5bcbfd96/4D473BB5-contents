@@ -1,0 +1,38 @@
+library(ritwals)
+library(tidyverse)
+
+ss <- get_feature('12A', data = WALS) # ss for Syllable Structure
+phoible <- read.csv("./phoible.csv")
+
+# 在同一个glottocode下避免重复：语言名必须一致，specific dialect必须为空，
+phoible <- phoible[is.na(phoible$SpecificDialect)]
+phoible$LanguageName <- tolower(phoible$LanguageName)
+phoible <- phoible |>
+  distinct(Glottocode, LanguageName, Phoneme, .keep_all = TRUE)
+
+ss$language <- tolower(ss$language)
+
+cons_count <- phoible |>
+  filter(SegmentClass == "consonant") |>
+  group_by(Glottocode, LanguageName, SegmentClass) |>
+  summarise(count = n()) |>
+  mutate(ConsonantCount = count)
+  
+cons_count <- cons_count[c("Glottocode", "LanguageName", "ConsonantCount")]
+
+vow_count <- phoible |>
+  filter(SegmentClass == "vowel") |>
+  group_by(Glottocode, LanguageName, SegmentClass) |>
+  summarise(count = n()) |>
+  mutate(VowelCount = count)
+
+vow_count <- vow_count[c("Glottocode", "LanguageName", "VowelCount")]
+
+cv_count <- full_join(cons_count, vow_count, by = c("Glottocode", "LanguageName"))
+
+ss <- ss |> mutate(Glottocode = glottocode)
+ss_with_count <- inner_join(ss, cv_count, by = c("language" = "LanguageName", "Glottocode")) |> 
+  drop_na() |>
+  mutate(CVRatio = ConsonantCount/VowelCount)
+
+saveRDS(ss_with_count, file = "data.rds")

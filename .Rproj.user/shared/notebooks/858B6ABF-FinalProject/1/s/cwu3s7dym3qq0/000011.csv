@@ -1,0 +1,5 @@
+"0","categories_in_macroareas <- languages_data |> ggplot(mapping=aes(x=macroarea, fill=complexity)) +"
+"0","  geom_bar(position='dodge') +"
+"0","  scale_fill_brewer(palette = ""YlOrRd"") + "
+"0","  labs(title = ""Complexity Categories in Different Macroareas"")"
+"0","ggplotly(categories_in_macroareas)"

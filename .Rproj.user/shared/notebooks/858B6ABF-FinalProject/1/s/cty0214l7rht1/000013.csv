@@ -1,0 +1,5 @@
+"0","macroareas_in_categories <- languages_data |> ggplot(mapping=aes(x=complexity, fill=macroarea)) +"
+"0","  geom_bar(position='dodge') +"
+"0","  scale_fill_brewer(palette = ""Set3"") +"
+"0","  labs(title = ""Macroarea Distribution within Each Syllable Structure Complexity Category"")"
+"0","ggplotly(macroareas_in_categories)"

@@ -1,0 +1,3 @@
+"0","languages_data |> group_by(complexity) |>"
+"0","  summarise(average_consonants = mean(consonant_count),"
+"0","            number_of_languages = n())"

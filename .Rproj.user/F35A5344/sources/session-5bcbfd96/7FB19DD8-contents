@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather:400,700|Source+Sans+Pro:400,400i,700');
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+
+  font-family: "Times New Roman", Times, serif;
+}
+
+p {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
